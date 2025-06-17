@@ -7,10 +7,22 @@ const orderSchema = new mongoose.Schema({
             name: String,
             price: Number,
             quantity: Number,
-            extras: [{ type: mongoose.Schema.Types.ObjectId, ref: "extra" }], // ✅ Reference to extra model
-            comment: { type: String, default: "" }
+            extras: [
+                {
+                    _id: { type: mongoose.Schema.Types.ObjectId, ref: "extra" },
+                    name: String,
+                    quantity: Number,
+                    price: Number
+                }
+            ],
+            comment: { type: String, default: "" },
+            mandatoryOptions: {
+                type: mongoose.Schema.Types.Mixed, // Accept any object shape (like { Size: {...}, Spice: {...} })
+                default: {}
+            }
+
         }
-    ],
+    ],    
     amount: { type: Number, required: true },
     address: { type: Object, required: true },
     status: { type: String, default: "Order Processing" },

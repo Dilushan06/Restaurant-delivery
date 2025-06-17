@@ -26,23 +26,32 @@ const placeOrder = async (req, res) => {
         let totalAmount = 0;
         const orderItems = req.body.items.map(item => {
             const extrasTotal = item.extras
-                ? item.extras.reduce((acc, extra) => acc + (extra.price * extra.quantity || 0), 0)
+                ? item.extras.reduce((acc, extra) => acc + (extra.price * item.quantity * extra.quantity || 0), 0)
                 : 0;
 
-            const itemTotal = ((item.price || 0) + extrasTotal) * (item.quantity || 1);
+                const mandatoryOptionsTotal = item.mandatoryOptions
+                ? Object.values(item.mandatoryOptions).reduce(
+                    (sum, opt) => sum + (opt.additionalPrice || 0), 0)
+                : 0;
+              
+              const itemTotal = (((item.price || 0) + mandatoryOptionsTotal) * (item.quantity || 1)) + extrasTotal;
+              
             totalAmount += itemTotal;
 
             return {
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-                extras: item.extras.map(extra => ({
-                    _id: extra._id,
-                    name: extra.name,
-                    quantity: extra.quantity
-                })),
-                comment: item.comment || ""
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              extras: item.extras.map(extra => ({
+                _id: extra._id,
+                name: extra.name,
+                quantity: extra.quantity,
+                price: extra.price
+              })),
+              mandatoryOptions: item.mandatoryOptions || {},
+              comment: item.comment || ""
             };
+            
         });
 
         if (isNaN(totalAmount) || totalAmount <= 0) {
@@ -55,7 +64,8 @@ const placeOrder = async (req, res) => {
             items: orderItems,
             amount: totalAmount,
             address: req.body.address,
-            date: req.body.date
+            date: req.body.date,
+            deliveryType: req.body.deliveryType
         });
 
         await newOrder.save();
@@ -63,11 +73,6 @@ const placeOrder = async (req, res) => {
 
         let line_items = [];
         req.body.items.forEach(item => {
-            // const extrasTotal = item.extras
-            //     ? item.extras.reduce((acc, extra) => acc + (extra.price * extra.quantity || 0), 0)
-            //     : 0;
-
-            // const totalItemPrice = (item.price || 0) + extrasTotal;
 
             line_items.push({
                 price_data: {
@@ -78,6 +83,21 @@ const placeOrder = async (req, res) => {
                 quantity: item.quantity || 1
             });
 
+            if (item.mandatoryOptions) {
+              Object.entries(item.mandatoryOptions).forEach(([key, opt]) => {
+                if (opt.additionalPrice) {
+                  line_items.push({
+                    price_data: {
+                      currency: "nok",
+                      product_data: { name: `${item.name} - ${key}: ${opt.label}` },
+                      unit_amount: Math.round(opt.additionalPrice * 100)
+                    },
+                    quantity: item.quantity || 1
+                  });
+                }
+              });
+            }
+
             item.extras.forEach(extra => {
                 if (extra.price) {
                     line_items.push({
@@ -86,7 +106,7 @@ const placeOrder = async (req, res) => {
                             product_data: { name: `${item.name} - ${extra.name}` },
                             unit_amount: Math.round(extra.price * 100),
                         },
-                        quantity: extra.quantity || 1
+                        quantity: item.quantity*extra.quantity || 1
                     });
                 }
             });
@@ -122,20 +142,22 @@ export const createGuestStripeCheckout = async (req, res) => {
     let totalAmount = 0;
 
     const processedItems = items.map(item => {
-      const extrasTotal = item.extras?.reduce((acc, extra) => acc + (extra.price * extra.quantity || 0), 0) || 0;
-      const itemTotal = ((item.price || 0) + extrasTotal) * (item.quantity || 1);
+      const extrasTotal = item.extras?.reduce((acc, extra) => acc + (extra.price * extra.quantity * item.quantity || 0), 0) || 0;
+      const mandatoryOptionsTotal = item.mandatoryOptions
+        ? Object.values(item.mandatoryOptions).reduce(
+            (sum, opt) => sum + (opt.additionalPrice || 0), 0)
+        : 0;
+
+      const itemTotal = (((item.price || 0) + mandatoryOptionsTotal) * (item.quantity || 1)) + extrasTotal;
+
       totalAmount += itemTotal;
 
       return {
         name: item.name,
         price: item.price,
         quantity: item.quantity,
-        extras: item.extras.map(extra => ({
-          _id: extra._id,
-          name: extra.name,
-          quantity: extra.quantity,
-          price: extra.price
-        })),
+        extras: item.extras || [],
+        mandatoryOptions: item.mandatoryOptions || {},
         comment: item.comment || ""
       };
     });
@@ -176,6 +198,22 @@ export const createGuestStripeCheckout = async (req, res) => {
         },
         quantity: item.quantity
       });
+      
+      if (item.mandatoryOptions) {
+        Object.entries(item.mandatoryOptions).forEach(([key, opt]) => {
+          if (opt.additionalPrice) {
+            line_items.push({
+              price_data: {
+                currency: "nok",
+                product_data: { name: `${item.name} - ${key}: ${opt.label}` },
+                unit_amount: Math.round(opt.additionalPrice * 100)
+              },
+              quantity: item.quantity || 1
+            });
+          }
+        });
+      }
+      
 
       item.extras?.forEach(extra => {
         if (extra.price ){
@@ -185,7 +223,7 @@ export const createGuestStripeCheckout = async (req, res) => {
                 product_data: { name: `${item.name} - ${extra.name}` },
                 unit_amount: Math.round((extra.price || 0) * 100)
             },
-            quantity: extra.quantity || 1
+            quantity: extra.quantity*extra.quantity || 1
             });
         }
       });

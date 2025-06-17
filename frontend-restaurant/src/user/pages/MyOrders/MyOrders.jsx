@@ -124,7 +124,7 @@ const MyOrders = () => {
                 backgroundColor: getStatusBackgroundColor(order.status),
               }}
             >
-              <img src={assets.parcel_icon} alt="" />
+            
 
               {/* Order Items Display */}
               <div className="order-details">
@@ -133,6 +133,21 @@ const MyOrders = () => {
                     <p>
                       <b>{item.name}</b> x {item.quantity}
                     </p>
+
+                    {/* Display Mandatory Options if available */}
+                    {item.mandatoryOptions && Object.keys(item.mandatoryOptions).length > 0 && (
+                      <p className="order-mandatory">
+                        <b>Options:</b>{" "}
+                        {Object.entries(item.mandatoryOptions).map(([key, value], i, arr) => (
+                          <span className="mandatory" key={i}>
+                            {key}: {value.label}
+                            {value.additionalPrice ? ` (+Kr ${value.additionalPrice})` : ""}
+                            {i < arr.length - 1 ? ", " : ""}
+                          </span>
+                        ))}
+                      </p>
+                    )}
+
 
                     {/* 🟢 Show Extra Ingredients ONLY for this item */}
                     {item.extras && item.extras.length > 0 && (
@@ -156,6 +171,7 @@ const MyOrders = () => {
                 ))}
               </div>
 
+
               <p>
                 <b>Total:</b> Kr {order.amount}.00
               </p>
@@ -163,7 +179,8 @@ const MyOrders = () => {
                 <b>Items:</b> {order.items.length}
               </p>
               <p>
-                <span>&#x25cf;</span> <b>{order.status}</b>
+                <span>&#x25cf;</span> <span className="status-pill">{order.status}</span>
+
               </p>
               <button onClick={fetchOrders}>Track Order</button>
             </div>

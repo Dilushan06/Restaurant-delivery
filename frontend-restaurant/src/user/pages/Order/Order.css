@@ -204,7 +204,8 @@
   }
   
 
-  /* Add these to Order.css */
+
+
 
 .delivery-modal {
   position: fixed;
@@ -266,6 +267,17 @@
 .delivery-modal-content .cancel:hover {
   background-color: #aaa;
 }
+
+.order-error-message {
+  color: #ff4d4f;
+  background: #ffeaea;
+  padding: 10px 15px;
+  margin: 10px 0 20px;
+  border: 1px solid #ff4d4f;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
 
 /* Animations */
 @keyframes fadeIn {

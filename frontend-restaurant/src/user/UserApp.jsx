@@ -13,6 +13,7 @@ import MenuPage from "./pages/MenuPAge/MenuPage";
 import AboutUs from "./pages/AboutUs/AboutUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy/PrivacyPolicy";
 import GuestTrack from "./pages/GuestTrack/GuestTrack";
+import HomeLanding from "./pages/HomeLanding/HomeLanding";
 
 function UserApp() {
   const [showLogin, setShowLogin] = useState(false);
@@ -20,10 +21,12 @@ function UserApp() {
   return (
     <>
       {showLogin && <Login setShowLogin={setShowLogin} />}
-      <div className="app">
+      <div className="page-container">
         <Navbar setShowLogin={setShowLogin} />
+        <div className="content-wrap">
         <Routes>
-          <Route path="/" element={<Home />} />
+          {/* <Route path="/" element={<Home />} /> */}
+          <Route path="/" element={<HomeLanding />} />
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/order" element={<Order />} />
@@ -32,7 +35,9 @@ function UserApp() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/track-order/:token" element={<GuestTrack/>} />
+          
         </Routes>
+        </div>
       </div>
       <Footer />
     </>

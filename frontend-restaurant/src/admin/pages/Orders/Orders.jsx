@@ -178,23 +178,41 @@ const Orders = ({ url }) => {
                 <p><b>Total Amount:</b> ${order.amount}.00</p>
 
                 {/* 🟢 Show Order Items with Extras */}
+                {/* 🟢 Show Order Items with Extras */}
                 {order.items.map((item, idx) => (
-                    <div key={idx} className="order-item-detail">
-                        <p><b>{item.name} x {item.quantity}</b></p>
-                        
-                        {/* Show Extras with Quantity */}
-                        {item.extras.length > 0 && (
-                            <p className="order-extras">
-                                <b>Extras:</b> {item.extras.map(extra => 
-                                    `${extra.name} x ${extra.quantity || 1}`).join(", ")}
-                            </p>
-                        )}
+                  <div key={idx} className="order-item-detail">
+                    <p><b>{item.name} x {item.quantity}</b></p>
+                    
+                    {/* ✅ Mandatory Options */}
+                    {item.mandatoryOptions && Object.keys(item.mandatoryOptions).length > 0 && (
+                      <p className="order-mandatory">
+                        <b>Options:</b>{" "}
+                        {Object.entries(item.mandatoryOptions)
+                          .map(([key, value]) => {
+                            const label = value?.label || "Unknown";
+                            const extra = value?.additionalPrice > 0 ? `(+Kr ${value.additionalPrice})` : "";
+                            return `${key}: ${label} ${extra}`.trim();
+                          })
+                          .join(", ")}
+                      </p>
+                    )}
 
-                        {/* Show Comment if available */}
-                        {item.comment && (
-                            <p className="order-comment"><b>Note:</b> {item.comment}</p>
-                        )}
-                    </div>
+
+                    {/* Extras */}
+                    {item.extras.length > 0 && (
+                      <p className="order-extras">
+                        <b>Extras:</b>{" "}
+                        {item.extras.map((extra) => `${extra.name} x ${extra.quantity || 1}`).join(", ")}
+                      </p>
+                    )}
+
+                    {/* Comment */}
+                    {item.comment && (
+                      <p className="order-comment">
+                        <b>Note:</b> {item.comment}
+                      </p>
+                    )}
+                  </div>
                 ))}
 
               </div>

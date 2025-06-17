@@ -10,6 +10,7 @@ import Categories from "./pages/Categories/Categories";
 import { ToastContainer } from "react-toastify";
 import { StoreContext } from "../user/context/StoreContext";
 import Extras from "./pages/Extras/Extras";
+import StoreHour from "./pages/StoreHour/StoreHour";
 
 const AdminApp = () => {
   const url = "http://localhost:4000";
@@ -35,6 +36,7 @@ const AdminApp = () => {
           <Route path="/orders" element={<Orders url={url} />} />
           <Route path="/categories" element={<Categories url={url} />} />
           <Route path="/extras" element={<Extras url={url} />}/>
+          <Route path="/store-hours" element={<StoreHour url={url} />}/>
         </Routes>
       </div>
     </div>

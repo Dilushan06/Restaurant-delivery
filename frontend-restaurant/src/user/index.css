@@ -9,13 +9,33 @@
 body{
   min-height: 100vh;
 }
+
 a{
   text-decoration: non;
   color: inherit;
 }
-.app{
+
+
+
+/* Makes the full page take 100% height */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Layout structure */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* full viewport height */
   width: 80%;
   margin: auto;
+}
+
+/* Content grows to fill remaining space */
+.content-wrap {
+  flex: 1;
 }
 
 @keyframes fadeIn {

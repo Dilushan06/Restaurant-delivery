@@ -5,7 +5,7 @@ import fs from "fs";
 // 🟢 Add New Food Item with Selected Extras
 const addFood = async (req, res) => {
     try {
-        const { name, description, price, category, extras } = req.body;
+        const { name, description, price, category, extras, mandatoryOptions } = req.body;
         const image = req.file.filename;
 
         let extraIds = [];
@@ -15,13 +15,19 @@ const addFood = async (req, res) => {
             extraIds = extraIds.map(extra => extra._id); // Extract IDs
         }
 
+        let parsedMandatoryOptions = [];
+        if (mandatoryOptions) {
+            parsedMandatoryOptions = JSON.parse(mandatoryOptions); // 🟢 Parse JSON string
+        }
+
         const newFood = new foodModel({
             name,
             description,
             price,
             category,
             image,
-            extras: extraIds, // 🟢 Store only ObjectIds
+            extras: extraIds,
+            mandatoryOptions: parsedMandatoryOptions // 🟢 Save to DB
         });
 
         await newFood.save();
@@ -31,6 +37,7 @@ const addFood = async (req, res) => {
         res.json({ success: false, message: "Error adding food item" });
     }
 };
+
 
 
 // 🟢 Get All Food Items with Assigned Extras
@@ -61,4 +68,17 @@ const removeFood = async (req, res) => {
     }
 };
 
-export { addFood, listFood, removeFood };
+// 🟡 Update Sold Out Status
+const updateSoldOutStatus = async (req, res) => {
+    try {
+      const { foodId, isSoldOut } = req.body;
+      await foodModel.findByIdAndUpdate(foodId, { isSoldOut });
+      res.json({ success: true, message: "Sold out status updated" });
+    } catch (error) {
+      console.log(error);
+      res.json({ success: false, message: "Error updating sold out status" });
+    }
+  };
+  
+
+export { addFood, listFood, removeFood, updateSoldOutStatus };

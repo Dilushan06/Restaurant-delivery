@@ -3,51 +3,54 @@ import extraModel from "../models/extraModel.js";
 
 // 🟢 Add item to cart (Modify to store as separate items)
 const addToCart = async (req, res) => {
-    const { itemId, extras, comment } = req.body;
-    const userId = req.userId; // Extract userId from middleware
+    const { itemId, extras, comment, quantity, mandatoryOptions } = req.body;
+    const userId = req.userId;
 
     try {
         const user = await userModel.findById(userId);
-
         if (!user) {
             return res.json({ success: false, message: "User not found" });
         }
 
-        // 🟢 Ensure cartData is an object
         if (!user.cartData || typeof user.cartData !== "object") {
             user.cartData = {};
         }
 
-        // ✅ Generate Unique Key using itemId + sorted extras + comment
-        const extrasKey = extras.length > 0 
+        // 🔑 Generate Unique Key using itemId + sorted extras + comment + mandatory options
+        const extrasKey = (extras && extras.length > 0)
             ? extras.map(extra => `${extra._id}-${extra.quantity}`).sort().join("_")
             : "no-extras";
-        
-        const uniqueKey = `${itemId}_${extrasKey}_${comment || "no-comment"}`;
 
-        // 🟢 If item with exact same extras & comment exists, increase quantity
+        const mandatoryKey = (mandatoryOptions && Object.keys(mandatoryOptions).length > 0)
+            ? Object.entries(mandatoryOptions)
+                .map(([key, val]) => `${key}-${val._id}`) // include key & selected option _id
+                .sort()
+                .join("_")
+            : "no-mandatory";
+
+        const uniqueKey = `${itemId}_${extrasKey}_${mandatoryKey}_${comment || "no-comment"}`;
+
         if (user.cartData[uniqueKey]) {
-            user.cartData[uniqueKey].quantity += 1;
+            user.cartData[uniqueKey].quantity += quantity || 1;
         } else {
-            // 🟢 Store as new entry
             user.cartData[uniqueKey] = {
-                itemId: itemId,
-                quantity: 1,
-                extras: extras,
-                comment: comment || ""
+                itemId,
+                quantity: quantity || 1,
+                extras,
+                comment: comment || "",
+                mandatoryOptions: mandatoryOptions || {}
             };
         }
 
-        // ✅ Save the updated cart data
         await userModel.findByIdAndUpdate(userId, { cartData: user.cartData });
 
         res.json({ success: true, message: "Item added to cart", cartData: user.cartData });
-
     } catch (error) {
         console.error("❌ Error adding to cart:", error);
         res.json({ success: false, message: "Error adding to cart" });
     }
 };
+
 
 
 
