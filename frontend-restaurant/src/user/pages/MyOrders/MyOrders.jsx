@@ -94,16 +94,22 @@ const MyOrders = () => {
   );
 
   // Change background color based on order status
-  const getStatusBackgroundColor = (status) => {
+    const getStatusBackgroundColor = (status) => {
     switch (status) {
       case "Order Processing":
-        return "#f8d7da"; // 🔴 Light Red
+        return "#f8d7da";
       case "Ready to Takeaway":
-        return "#fff3cd"; // 🟡 Light Yellow
+        return "#fff3cd";
       case "Taken":
-        return "#d4edda"; // 🟢 Light Green
+        return "#d4edda";
+      case "Preparing for Delivery":
+        return "#e0f7fa"; // light blue
+      case "Out for Delivery":
+        return "#ffe0b2"; // light orange
+      case "Delivered":
+        return "#dcedc8"; // light green
       default:
-        return "#f8f9fa"; // Light Gray
+        return "#f8f9fa";
     }
   };
 
